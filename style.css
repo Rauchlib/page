@@ -1,0 +1,69 @@
+html {
+  background: #f3f0e8;
+  color: #1a1a1a;
+}
+body {
+  margin: 0;
+  padding: 9vh 8vw 6vh;
+  font: 19px/1.55 "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+}
+a {
+  color: inherit;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.18em;
+}
+a:hover {
+  background: #1a1a1a;
+  color: #f3f0e8;
+  text-decoration: none;
+}
+.back {
+  font-size: 16px;
+}
+article {
+  max-width: 34em;
+  margin-top: 8vh;
+}
+h1 {
+  margin: 0 0 1em;
+  font-weight: normal;
+  font-size: clamp(36px, 6vw, 64px);
+  line-height: 1.05;
+  letter-spacing: -0.015em;
+}
+.meta {
+  margin: 0 0 1em;
+  color: #6b675e;
+  font-size: 16px;
+}
+h2 {
+  margin: 2em 0 0.4em;
+  font-weight: normal;
+  font-style: italic;
+  font-size: 24px;
+}
+p, ul {
+  margin: 0 0 1em;
+}
+ul {
+  padding-left: 1.2em;
+}
+code {
+  font-family: ui-monospace, Menlo, Consolas, monospace;
+  font-size: 0.85em;
+}
+pre {
+  font-family: ui-monospace, Menlo, Consolas, monospace;
+  font-size: 15px;
+  line-height: 1.45;
+  margin: 0 0 1em;
+  padding: 1em 0;
+  border-top: 1px solid #d9d4c7;
+  border-bottom: 1px solid #d9d4c7;
+  overflow-x: auto;
+}
+footer {
+  margin-top: 10vh;
+  font-size: 15px;
+  color: #6b675e;
+}
