@@ -1,473 +1,58 @@
 <!DOCTYPE html>
 <html lang="de-CH">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Lukas Brauchli – Licht, Code & Basteleien</title>
-  <meta name="description" content="Lukas Brauchli: Licht planen, Abläufe automatisieren, Raspberry Pis zum Laufen bringen. Kontakt: hallo@lukasbrauchli.ch">
-  <meta name="theme-color" content="#0b0d10">
-  <meta property="og:title" content="Lukas Brauchli">
-  <meta property="og:description" content="Licht, Code & Basteleien – aus der Schweiz.">
-  <meta property="og:url" content="https://lukasbrauchli.ch/">
-  <meta property="og:type" content="website">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><circle cx='32' cy='32' r='14' fill='%23ffd166'/><circle cx='32' cy='32' r='26' fill='none' stroke='%23ffd166' stroke-opacity='.35' stroke-width='4'/></svg>">
-  <style>
-    :root {
-      --bg: #0b0d10;
-      --bg-2: #12151a;
-      --line: #232831;
-      --text: #eef1f5;
-      --muted: #8b95a3;
-      --light: #ffd166;
-      --light-soft: rgba(255, 209, 102, .14);
-      --cool: #7cc4ff;
-      --mx: 50vw;
-      --my: 40vh;
-      --r: 340px;
-      --radius: 18px;
-      --mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
-      --sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-    }
-    * { box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
-    body {
-      margin: 0;
-      background: var(--bg);
-      color: var(--text);
-      font-family: var(--sans);
-      line-height: 1.6;
-      -webkit-font-smoothing: antialiased;
-      overflow-x: hidden;
-    }
-    a { color: inherit; }
-    ::selection { background: var(--light); color: #111; }
-
-    /* ---------- Scheinwerfer ---------- */
-    .spot {
-      position: fixed; inset: 0; pointer-events: none; z-index: 1;
-      background:
-        radial-gradient(circle var(--r) at var(--mx) var(--my),
-          rgba(255, 214, 120, .16), rgba(255, 214, 120, .05) 45%, transparent 70%);
-      mix-blend-mode: screen;
-      transition: background .05s linear;
-    }
-    .grain {
-      position: fixed; inset: 0; pointer-events: none; z-index: 2; opacity: .06;
-      background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
-    }
-
-    /* ---------- Navigation ---------- */
-    nav {
-      position: fixed; top: 0; left: 0; right: 0; z-index: 20;
-      display: flex; justify-content: space-between; align-items: center;
-      padding: 18px clamp(20px, 5vw, 56px);
-      background: linear-gradient(var(--bg) 30%, transparent);
-    }
-    .logo {
-      font-family: var(--mono); font-size: 14px; text-decoration: none;
-      display: inline-flex; align-items: center; gap: 10px; letter-spacing: .02em;
-    }
-    .logo i {
-      width: 10px; height: 10px; border-radius: 50%; background: var(--light);
-      box-shadow: 0 0 12px var(--light), 0 0 32px var(--light);
-      animation: pulse 3s ease-in-out infinite;
-    }
-    @keyframes pulse { 50% { opacity: .55; box-shadow: 0 0 6px var(--light); } }
-    nav ul { display: flex; gap: clamp(14px, 3vw, 32px); list-style: none; margin: 0; padding: 0; }
-    nav ul a { font-size: 14px; color: var(--muted); text-decoration: none; transition: color .2s; }
-    nav ul a:hover { color: var(--light); }
-
-    /* ---------- Hero ---------- */
-    main { position: relative; z-index: 3; }
-    .hero {
-      min-height: 100svh; display: grid; place-items: center; text-align: center;
-      padding: 120px 20px 80px; position: relative;
-    }
-    .eyebrow {
-      font-family: var(--mono); font-size: 13px; color: var(--muted);
-      letter-spacing: .18em; text-transform: uppercase; margin-bottom: 22px;
-    }
-    h1 {
-      font-size: clamp(56px, 13vw, 184px); line-height: .88; margin: 0;
-      font-weight: 800; letter-spacing: -.045em;
-      color: #1b1f26;
-      background:
-        radial-gradient(circle calc(var(--r) * .9) at var(--hx, 50%) var(--hy, 50%),
-          #fff7dc 0%, var(--light) 28%, #3a3324 62%, #1b1f26 80%);
-      -webkit-background-clip: text; background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-    .hero p.lead {
-      max-width: 560px; margin: 32px auto 0; color: var(--muted);
-      font-size: clamp(17px, 2vw, 20px);
-    }
-    .hero p.lead b { color: var(--text); font-weight: 600; }
-    .luxmeter {
-      position: fixed; right: clamp(16px, 3vw, 32px); bottom: clamp(16px, 3vw, 28px); z-index: 25;
-      font-family: var(--mono); font-size: 12px; color: var(--muted);
-      border: 1px solid var(--line); background: rgba(18, 21, 26, .8);
-      backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
-      padding: 10px 14px; border-radius: 12px; min-width: 150px;
-    }
-    .luxmeter strong { display: block; color: var(--light); font-size: 20px; font-weight: 600; }
-    .luxmeter .bar { height: 3px; background: var(--line); border-radius: 3px; margin-top: 8px; overflow: hidden; }
-    .luxmeter .bar span { display: block; height: 100%; width: 0; background: var(--light); transition: width .1s; }
-    .scroll-hint {
-      position: absolute; bottom: 32px; left: 50%; transform: translateX(-50%);
-      font-family: var(--mono); font-size: 12px; color: var(--muted); text-decoration: none;
-    }
-    .scroll-hint::after {
-      content: ""; display: block; width: 1px; height: 40px; margin: 10px auto 0;
-      background: linear-gradient(var(--light), transparent);
-      animation: drip 2.2s ease-in-out infinite;
-    }
-    @keyframes drip { 0% { transform: scaleY(0); transform-origin: top; } 50% { transform: scaleY(1); transform-origin: top; } 51% { transform-origin: bottom; } 100% { transform: scaleY(0); transform-origin: bottom; } }
-
-    /* ---------- Sections ---------- */
-    section { padding: clamp(80px, 12vw, 140px) clamp(20px, 5vw, 56px); max-width: 1180px; margin: 0 auto; }
-    .label {
-      font-family: var(--mono); font-size: 13px; color: var(--light);
-      letter-spacing: .14em; text-transform: uppercase; margin: 0 0 18px;
-    }
-    h2 { font-size: clamp(34px, 5.5vw, 64px); line-height: 1.02; margin: 0 0 28px; letter-spacing: -.03em; max-width: 14ch; }
-    h2 em { font-style: normal; color: var(--light); }
-
-    .about { display: grid; grid-template-columns: 1.1fr 1fr; gap: clamp(32px, 6vw, 80px); align-items: start; }
-    .about p { color: var(--muted); font-size: 18px; margin: 0 0 18px; }
-    .about p b { color: var(--text); font-weight: 600; }
-    .facts { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-    .fact {
-      border: 1px solid var(--line); border-radius: var(--radius); padding: 22px;
-      background: linear-gradient(160deg, var(--bg-2), var(--bg));
-    }
-    .fact .n { font-size: 34px; font-weight: 700; letter-spacing: -.03em; }
-    .fact .n small { font-size: 16px; color: var(--light); margin-left: 3px; }
-    .fact .t { color: var(--muted); font-size: 14px; }
-
-    /* Spektrum: drei Felder */
-    .spectrum { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 12px; }
-    .field {
-      position: relative; border: 1px solid var(--line); border-radius: var(--radius);
-      padding: 30px 26px 28px; background: var(--bg-2); overflow: hidden;
-      transition: transform .35s cubic-bezier(.2, .8, .2, 1), border-color .35s;
-    }
-    .field::before {
-      content: ""; position: absolute; inset: 0; opacity: 0; transition: opacity .35s;
-      background: radial-gradient(400px circle at var(--fx, 50%) var(--fy, 0%), var(--glow), transparent 60%);
-    }
-    .field:hover { transform: translateY(-4px); border-color: #3a414c; }
-    .field:hover::before { opacity: 1; }
-    .field > * { position: relative; }
-    .field .icon { width: 44px; height: 44px; margin-bottom: 22px; }
-    .field h3 { margin: 0 0 10px; font-size: 22px; letter-spacing: -.01em; }
-    .field p { margin: 0; color: var(--muted); font-size: 15.5px; }
-    .field .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 20px; }
-    .field .tags span {
-      font-family: var(--mono); font-size: 11.5px; color: var(--muted);
-      border: 1px solid var(--line); border-radius: 99px; padding: 3px 10px;
-    }
-    .f-licht { --glow: rgba(255, 209, 102, .13); }
-    .f-code  { --glow: rgba(124, 196, 255, .13); }
-    .f-pi    { --glow: rgba(155, 230, 160, .12); }
-
-    /* Projekte */
-    .projects { display: grid; gap: 14px; }
-    .project {
-      display: grid; grid-template-columns: 70px 1fr auto; gap: 24px; align-items: center;
-      padding: 26px 28px; border: 1px solid var(--line); border-radius: var(--radius);
-      text-decoration: none; background: var(--bg); transition: background .25s, border-color .25s;
-    }
-    .project:hover { background: var(--bg-2); border-color: #3a414c; }
-    .project .no { font-family: var(--mono); color: var(--muted); font-size: 13px; }
-    .project h3 { margin: 0 0 4px; font-size: 20px; }
-    .project p { margin: 0; color: var(--muted); font-size: 15px; }
-    .project .go { font-family: var(--mono); font-size: 13px; color: var(--muted); white-space: nowrap; transition: color .2s, transform .2s; }
-    .project:hover .go { color: var(--light); transform: translateX(4px); }
-
-    /* Terminal */
-    .terminal {
-      margin-top: 40px; border: 1px solid var(--line); border-radius: var(--radius);
-      background: #07090b; overflow: hidden; font-family: var(--mono); font-size: 14px;
-    }
-    .terminal .bar { display: flex; gap: 7px; padding: 12px 16px; border-bottom: 1px solid var(--line); align-items: center; }
-    .terminal .bar i { width: 11px; height: 11px; border-radius: 50%; background: #2b3039; }
-    .terminal .bar span { margin-left: 10px; color: var(--muted); font-size: 12px; }
-    .terminal pre { margin: 0; padding: 20px 22px 24px; white-space: pre-wrap; color: #c9d1d9; min-height: 220px; }
-    .terminal .p { color: #9be6a0; }
-    .terminal .d { color: var(--muted); }
-    .terminal .y { color: var(--light); }
-    .caret { display: inline-block; width: 8px; height: 1.1em; background: var(--light); vertical-align: -2px; animation: blink 1s steps(1) infinite; }
-    @keyframes blink { 50% { opacity: 0; } }
-
-    /* Kontakt */
-    .contact { text-align: center; padding-bottom: 120px; }
-    .contact h2 { margin-left: auto; margin-right: auto; max-width: 16ch; }
-    .contact p { color: var(--muted); font-size: 18px; max-width: 520px; margin: 0 auto 40px; }
-    .switch {
-      display: inline-flex; align-items: center; gap: 18px; text-decoration: none;
-      font-size: clamp(20px, 3.6vw, 34px); font-weight: 700; letter-spacing: -.02em;
-      padding: 20px 30px 20px 22px; border-radius: 99px; border: 1px solid var(--line);
-      background: var(--bg-2); transition: border-color .3s, box-shadow .3s, color .3s;
-    }
-    .switch .toggle {
-      width: 54px; height: 30px; border-radius: 99px; background: #2a2f38; position: relative; flex: none;
-      transition: background .3s;
-    }
-    .switch .toggle::after {
-      content: ""; position: absolute; top: 4px; left: 4px; width: 22px; height: 22px; border-radius: 50%;
-      background: #6b7480; transition: transform .3s cubic-bezier(.2, .8, .2, 1), background .3s, box-shadow .3s;
-    }
-    .switch:hover, .switch:focus-visible { border-color: var(--light); box-shadow: 0 0 60px rgba(255, 209, 102, .18); color: var(--light); outline: none; }
-    .switch:hover .toggle, .switch:focus-visible .toggle { background: rgba(255, 209, 102, .25); }
-    .switch:hover .toggle::after, .switch:focus-visible .toggle::after { transform: translateX(24px); background: var(--light); box-shadow: 0 0 16px var(--light); }
-    .copy {
-      display: block; margin: 18px auto 0; background: none; border: 0; color: var(--muted);
-      font-family: var(--mono); font-size: 13px; cursor: pointer; padding: 6px 10px;
-    }
-    .copy:hover { color: var(--text); }
-
-    footer {
-      position: relative; z-index: 3; border-top: 1px solid var(--line);
-      padding: 28px clamp(20px, 5vw, 56px); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px;
-      font-family: var(--mono); font-size: 12.5px; color: var(--muted);
-    }
-    footer a { text-decoration: none; }
-    footer a:hover { color: var(--light); }
-
-    /* Reveal */
-    .reveal { opacity: 0; transform: translateY(24px); transition: opacity .8s ease, transform .8s cubic-bezier(.2, .8, .2, 1); }
-    .reveal.in { opacity: 1; transform: none; }
-
-    @media (max-width: 860px) {
-      .about { grid-template-columns: 1fr; }
-      .spectrum { grid-template-columns: 1fr; }
-      .project { grid-template-columns: 1fr; gap: 6px; }
-      .project .go { margin-top: 8px; }
-      nav ul li:nth-child(2) { display: none; }
-      .luxmeter { display: none; }
-    }
-    @media (prefers-reduced-motion: reduce) {
-      *, *::before, *::after { animation: none !important; transition: none !important; }
-      .reveal { opacity: 1; transform: none; }
-    }
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lukas Brauchli</title>
+<meta name="description" content="Lukas Brauchli. Hast du eine Frage? Stell sie mir: hallo@lukasbrauchli.ch">
+<style>
+  html {
+    background: #f3f0e8;
+    color: #1a1a1a;
+  }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 9vh 8vw 6vh;
+    box-sizing: border-box;
+    font: 19px/1.45 "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+  }
+  h1 {
+    margin: 0;
+    font-weight: normal;
+    font-size: clamp(44px, 9vw, 120px);
+    line-height: 1;
+    letter-spacing: -0.02em;
+  }
+  p {
+    margin: 1.4em 0 0;
+    font-size: clamp(20px, 2.6vw, 30px);
+    max-width: 26em;
+  }
+  a {
+    color: inherit;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.18em;
+  }
+  a:hover {
+    background: #1a1a1a;
+    color: #f3f0e8;
+    text-decoration: none;
+  }
+  footer {
+    font-size: 15px;
+    color: #6b675e;
+  }
+</style>
 </head>
 <body>
-  <div class="spot" aria-hidden="true"></div>
-  <div class="grain" aria-hidden="true"></div>
-
-  <nav>
-    <a class="logo" href="#top"><i></i>lukasbrauchli.ch</a>
-    <ul>
-      <li><a href="#ueber">Über mich</a></li>
-      <li><a href="#projekte">Projekte</a></li>
-      <li><a href="#kontakt">Kontakt</a></li>
-    </ul>
-  </nav>
-
-  <div class="luxmeter" aria-hidden="true">
-    Beleuchtungsstärke
-    <strong><span id="lux">0</span> lx</strong>
-    <div class="bar"><span id="luxbar"></span></div>
-  </div>
-
-  <main id="top">
-    <header class="hero">
-      <div>
-        <div class="eyebrow">Licht · Code · Basteleien</div>
-        <h1 id="name">Lukas<br>Brauchli</h1>
-        <p class="lead">Ich plane <b>Licht</b>, automatisiere <b>Abläufe</b> und bringe <b>Raspberry Pis</b> zum Laufen. Fahr mit der Maus über den Namen.</p>
-      </div>
-      <a class="scroll-hint" href="#ueber">weiter</a>
-    </header>
-
-    <section id="ueber">
-      <div class="about">
-        <div class="reveal">
-          <p class="label">01 — Über mich</p>
-          <h2>Ich mache Dinge <em>sichtbar</em>.</h2>
-        </div>
-        <div class="reveal">
-          <p>Hallo, ich bin Lukas. Den Tag verbringe ich mit <b>Lichtplanung</b>: aus Lichtberechnungen werden Leuchtenpläne, aus Leuchten Broschüren und aus Daten Entscheidungen.</p>
-          <p>Abends geht es weiter, nur mit anderem Werkzeug. Ich baue kleine <b>Tools</b>, die mir lästige Arbeit abnehmen, automatisiere Workflows und tüftle an meinem <b>Homelab</b>.</p>
-          <p>Mein Prinzip: Gut ist, was am Ende jemand versteht.</p>
-          <div class="facts">
-            <div class="fact"><div class="n">1<small>Pi</small></div><div class="t">im Homelab, das rund um die Uhr läuft</div></div>
-            <div class="fact"><div class="n">500<small>lx</small></div><div class="t">reichen fürs Büro. Ich lese trotzdem gern im Dunkeln</div></div>
-            <div class="fact"><div class="n">∞<small>Ideen</small></div><div class="t">auf der Liste «sollte man mal bauen»</div></div>
-            <div class="fact"><div class="n">CH<small>🇨🇭</small></div><div class="t">zu Hause in der Schweiz</div></div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section>
-      <p class="label reveal">02 — Was ich mache</p>
-      <h2 class="reveal">Drei Felder, <em>eine</em> Neugier.</h2>
-      <div class="spectrum">
-        <article class="field f-licht reveal">
-          <svg class="icon" viewBox="0 0 48 48" fill="none" stroke="#ffd166" stroke-width="2" stroke-linecap="round"><path d="M24 6v4M10 12l3 3M38 12l-3 3M6 26h4M38 26h4"/><path d="M17 33a10 10 0 1 1 14 0c-1.5 1.4-2 3-2 5H19c0-2-.5-3.6-2-5Z"/><path d="M20 42h8"/></svg>
-          <h3>Licht</h3>
-          <p>Ich plane Beleuchtung und mache aus DIALux- oder Relux-Berechnungen Leuchtenpläne, die Kunden auf Anhieb lesen können.</p>
-          <div class="tags"><span>DIALux</span><span>Relux</span><span>Leuchtenpläne</span><span>Produktblätter</span></div>
-        </article>
-        <article class="field f-code reveal">
-          <svg class="icon" viewBox="0 0 48 48" fill="none" stroke="#7cc4ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 16-8 8 8 8M32 16l8 8-8 8M27 10l-6 28"/></svg>
-          <h3>Code & Automation</h3>
-          <p>Ich baue kleine Python-Tools und Workflows, die das Wiederholbare übernehmen. Dann bleibt Zeit für das Spannende.</p>
-          <div class="tags"><span>Python</span><span>n8n</span><span>Make</span><span>KI-Agenten</span></div>
-        </article>
-        <article class="field f-pi reveal">
-          <svg class="icon" viewBox="0 0 48 48" fill="none" stroke="#9be6a0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="12" width="32" height="24" rx="3"/><path d="M14 18h6v6h-6zM26 18h8M26 23h8M14 30h20M16 8v4M24 8v4M32 8v4M16 36v4M24 36v4M32 36v4"/></svg>
-          <h3>Homelab</h3>
-          <p>Ein Raspberry Pi 4 mit Docker, SSH und eigenen Skripten. Mein Spielplatz zum Lernen und Kaputtmachen.</p>
-          <div class="tags"><span>Raspberry Pi</span><span>Docker</span><span>Linux</span><span>Obsidian</span></div>
-        </article>
-      </div>
-    </section>
-
-    <section id="projekte">
-      <p class="label reveal">03 — Projekte</p>
-      <h2 class="reveal">Aus der <em>Werkstatt</em>.</h2>
-      <div class="projects">
-        <a class="project reveal" href="https://github.com/Rauchlib/homelab" target="_blank" rel="noopener">
-          <span class="no">/01</span>
-          <div><h3>Homelab</h3><p>Raspberry Pi 4, Pi OS Trixie, Docker-Stacks und Hilfsskripte, sauber dokumentiert.</p></div>
-          <span class="go">GitHub →</span>
-        </a>
-        <div class="project reveal">
-          <span class="no">/02</span>
-          <div><h3>Foto-Umbenenner</h3><p>Eine kleine Python-App: Ordner wählen, Datum und Startnummer setzen, Vorschau prüfen und erst dann umbenennen.</p></div>
-          <span class="go">Python</span>
-        </div>
-        <div class="project reveal">
-          <span class="no">/03</span>
-          <div><h3>Lichtberechnung → Leuchtenplan</h3><p>Aus einem DIALux- oder Relux-PDF entsteht automatisch ein A3-Leuchtenplan mit Tabellen und Prüfhinweisen.</p></div>
-          <span class="go">Automation</span>
-        </div>
-        <a class="project reveal" href="/timer.html">
-          <span class="no">/04</span>
-          <div><h3>Countdown-Timer</h3><p>Ein schlanker Timer fürs Handy. Klein, schnell, ohne Schnickschnack.</p></div>
-          <span class="go">Ausprobieren →</span>
-        </a>
-      </div>
-
-      <div class="terminal reveal" aria-label="Homelab-Terminal">
-        <div class="bar"><i></i><i></i><i></i><span>lukas@homelab: ~</span></div>
-        <pre id="term"></pre>
-      </div>
-    </section>
-
-    <section id="kontakt" class="contact">
-      <p class="label reveal">04 — Kontakt</p>
-      <h2 class="reveal">Fragen? <em>Licht an.</em></h2>
-      <p class="reveal">Du hast ein Projekt, eine Idee oder einfach eine Frage? Schreib mir, ich antworte gern.</p>
-      <a class="switch reveal" href="mailto:hallo@lukasbrauchli.ch"><span class="toggle" aria-hidden="true"></span>hallo@lukasbrauchli.ch</a>
-      <button class="copy" id="copy" type="button">Adresse kopieren</button>
-    </section>
+  <main>
+    <h1>Lukas Brauchli</h1>
+    <p>Hast du eine Frage? Stell sie mir an <a href="mailto:hallo@lukasbrauchli.ch">hallo@lukasbrauchli.ch</a>.</p>
   </main>
-
-  <footer>
-    <span>© <span id="year">2026</span> Lukas Brauchli</span>
-    <span><a href="mailto:hallo@lukasbrauchli.ch">hallo@lukasbrauchli.ch</a> · <a href="https://github.com/Rauchlib" target="_blank" rel="noopener">GitHub</a></span>
-  </footer>
-
-  <script>
-    const root = document.documentElement;
-    const nameEl = document.getElementById('name');
-    const luxEl = document.getElementById('lux');
-    const luxBar = document.getElementById('luxbar');
-    const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-    let tx = innerWidth / 2, ty = innerHeight * .4, x = tx, y = ty, moved = false;
-
-    function setTarget(px, py) { tx = px; ty = py; moved = true; }
-    addEventListener('pointermove', e => setTarget(e.clientX, e.clientY), { passive: true });
-    addEventListener('touchmove', e => { const t = e.touches[0]; setTarget(t.clientX, t.clientY); }, { passive: true });
-
-    function frame(t) {
-      if (!moved && !reduce) {           // Ohne Maus: Licht wandert langsam
-        tx = innerWidth / 2 + Math.cos(t / 2400) * innerWidth * .22;
-        ty = innerHeight * .42 + Math.sin(t / 1700) * innerHeight * .12;
-      }
-      x += (tx - x) * .14; y += (ty - y) * .14;
-      root.style.setProperty('--mx', x + 'px');
-      root.style.setProperty('--my', y + 'px');
-
-      const r = nameEl.getBoundingClientRect();
-      nameEl.style.setProperty('--hx', (x - r.left) + 'px');
-      nameEl.style.setProperty('--hy', (y - r.top) + 'px');
-
-      // «Beleuchtungsstärke» des Namens: fällt quadratisch mit der Distanz (fürs Gefühl)
-      const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
-      const d = Math.hypot(x - cx, y - cy) / 100 + 1;
-      const lux = Math.round(1500 / (d * d));
-      luxEl.textContent = lux;
-      luxBar.style.width = Math.min(100, lux / 15) + '%';
-      requestAnimationFrame(frame);
-    }
-    requestAnimationFrame(frame);
-
-    // Glow auf den Karten
-    document.querySelectorAll('.field').forEach(el => {
-      el.addEventListener('pointermove', e => {
-        const b = el.getBoundingClientRect();
-        el.style.setProperty('--fx', (e.clientX - b.left) + 'px');
-        el.style.setProperty('--fy', (e.clientY - b.top) + 'px');
-      });
-    });
-
-    // Einblenden beim Scrollen
-    const io = new IntersectionObserver(es => es.forEach(e => {
-      if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
-    }), { threshold: .15 });
-    document.querySelectorAll('.reveal').forEach(el => io.observe(el));
-
-    // Terminal tippt, sobald sichtbar
-    const lines = [
-      ['p', '$ '], ['', 'ssh lukas@homelab\n'],
-      ['d', 'Raspberry Pi 4 Model B · Pi OS Trixie 64-bit\n\n'],
-      ['p', '$ '], ['', 'ls ~/homelab\n'],
-      ['y', 'docker/  docs/  scripts/  README.md\n\n'],
-      ['p', '$ '], ['', 'cat ~/todo.txt\n'],
-      ['', '[x] Webseite bauen\n[ ] Noch mehr automatisieren\n[ ] Licht im Keller endlich richtig planen\n\n'],
-      ['p', '$ '], ['', 'echo "Danke fürs Vorbeischauen!"\n'],
-      ['', 'Danke fürs Vorbeischauen!\n'],
-      ['p', '$ ']
-    ];
-    const term = document.getElementById('term');
-    let started = false;
-    function typeTerm() {
-      if (started) return; started = true;
-      if (reduce) {
-        term.innerHTML = lines.map(([c, s]) => `<span class="${c}">${s}</span>`).join('') + '<span class="caret"></span>';
-        return;
-      }
-      let i = 0, j = 0, span = null;
-      const caret = document.createElement('span'); caret.className = 'caret';
-      term.appendChild(caret);
-      (function step() {
-        if (i >= lines.length) return;
-        const [cls, text] = lines[i];
-        if (!span) { span = document.createElement('span'); span.className = cls; term.insertBefore(span, caret); }
-        const typed = cls === '';     // Befehle tippen, Ausgaben erscheinen sofort
-        if (typed && lines[i - 1] && lines[i - 1][0] === 'p') { span.textContent += text[j++]; }
-        else { span.textContent = text; j = text.length; }
-        if (j >= text.length) { i++; j = 0; span = null; setTimeout(step, 260); }
-        else setTimeout(step, 38 + Math.random() * 60);
-      })();
-    }
-    new IntersectionObserver((es, o) => es.forEach(e => {
-      if (e.isIntersecting) { typeTerm(); o.disconnect(); }
-    }), { threshold: .4 }).observe(term);
-
-    // E-Mail kopieren
-    document.getElementById('copy').addEventListener('click', async e => {
-      try { await navigator.clipboard.writeText('hallo@lukasbrauchli.ch'); e.target.textContent = 'Kopiert ✓'; }
-      catch { e.target.textContent = 'hallo@lukasbrauchli.ch'; }
-      setTimeout(() => e.target.textContent = 'Adresse kopieren', 2000);
-    });
-
-    document.getElementById('year').textContent = new Date().getFullYear();
-  </script>
+  <footer>lukasbrauchli.ch</footer>
 </body>
 </html>
